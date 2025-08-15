@@ -1,66 +1,42 @@
 openapi: 3.0.3
 info:
-  title: Agent API
+  title: Neu Scholar Agent API
   version: 1.0.0
-  description: API cung cấp thông tin cấu hình, xử lý yêu cầu và trả dữ liệu từ Agent.
+  description: API cho AgentX gồm metadata, xử lý câu hỏi và lấy dữ liệu
+
 servers:
-  - url: http://localhost:3000
-tags:
-  - name: Agent
-    description: Các API liên quan đến Agent
+  - url: https://neu-scholar.onrender.com
 
 paths:
   /metadata:
     get:
-      tags: [Agent]
       summary: Lấy thông tin cấu hình & khả năng của Agent
-      operationId: getMetadata
       responses:
         '200':
-          description: Thông tin metadata của Agent
+          description: Thông tin Agent
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Metadata'
-              example:
-                name: AgentX
-                version: "1.0.0"
-                capabilities: ["ask", "data-retrieval"]
-                model:
-                  name: "gpt-4o-mini"
-                  provider: "OpenAI"
+                $ref: '#/components/schemas/MetadataResponse'
 
   /ask:
     post:
-      tags: [Agent]
-      summary: Gửi câu hỏi hoặc yêu cầu tới Agent
-      operationId: askAgent
+      summary: Gửi câu hỏi để Agent xử lý
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/AskRequest'
-            example:
-              query: "Thời tiết Hà Nội hôm nay?"
-              sessionId: "abc123"
-              params:
-                stream: false
       responses:
         '200':
-          description: Câu trả lời từ Agent
+          description: Kết quả trả lời từ Agent
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AskResponse'
-              example:
-                answer: "Hôm nay trời nắng nhẹ, nhiệt độ khoảng 31°C."
-                confidence: 0.9
-                sources:
-                  - title: "Open-Meteo"
-                    url: "https://example.com/weather"
         '400':
-          description: Yêu cầu không hợp lệ
+          description: Lỗi request
           content:
             application/json:
               schema:
@@ -68,21 +44,75 @@ paths:
 
   /data:
     get:
-      tags: [Agent]
-      summary: Trả về dữ liệu hiện có của Agent
-      operationId: getData
+      summary: Lấy dữ liệu hiện có của Agent
       responses:
         '200':
-          description: Dữ liệu hiện có
+          description: Danh sách dữ liệu
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataResponse'
-              example:
-                data:
-                  - id: "1"
-                    value: "Sample note"
-                    updatedAt: "2025-08-15T12:00:00Z"
 
 components:
   schemas:
+    MetadataResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        model:
+          type: object
+          properties:
+            name:
+              type: string
+            provider:
+              type: string
+
+    AskRequest:
+      type: object
+      required:
+        - query
+        - sessionId
+      properties:
+        query:
+          type: string
+        sessionId:
+          type: string
+        params:
+          type: object
+          properties:
+            stream:
+              type: boolean
+
+    AskResponse:
+      type: object
+      properties:
+        answer:
+          type: string
+        sessionId:
+          type: string
+
+    DataResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
