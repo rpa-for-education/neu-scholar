@@ -1,0 +1,88 @@
+openapi: 3.0.3
+info:
+  title: Agent API
+  version: 1.0.0
+  description: API cung cấp thông tin cấu hình, xử lý yêu cầu và trả dữ liệu từ Agent.
+servers:
+  - url: http://localhost:3000
+tags:
+  - name: Agent
+    description: Các API liên quan đến Agent
+
+paths:
+  /metadata:
+    get:
+      tags: [Agent]
+      summary: Lấy thông tin cấu hình & khả năng của Agent
+      operationId: getMetadata
+      responses:
+        '200':
+          description: Thông tin metadata của Agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metadata'
+              example:
+                name: AgentX
+                version: "1.0.0"
+                capabilities: ["ask", "data-retrieval"]
+                model:
+                  name: "gpt-4o-mini"
+                  provider: "OpenAI"
+
+  /ask:
+    post:
+      tags: [Agent]
+      summary: Gửi câu hỏi hoặc yêu cầu tới Agent
+      operationId: askAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AskRequest'
+            example:
+              query: "Thời tiết Hà Nội hôm nay?"
+              sessionId: "abc123"
+              params:
+                stream: false
+      responses:
+        '200':
+          description: Câu trả lời từ Agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AskResponse'
+              example:
+                answer: "Hôm nay trời nắng nhẹ, nhiệt độ khoảng 31°C."
+                confidence: 0.9
+                sources:
+                  - title: "Open-Meteo"
+                    url: "https://example.com/weather"
+        '400':
+          description: Yêu cầu không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /data:
+    get:
+      tags: [Agent]
+      summary: Trả về dữ liệu hiện có của Agent
+      operationId: getData
+      responses:
+        '200':
+          description: Dữ liệu hiện có
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataResponse'
+              example:
+                data:
+                  - id: "1"
+                    value: "Sample note"
+                    updatedAt: "2025-08-15T12:00:00Z"
+
+components:
+  schemas:
